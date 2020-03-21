@@ -1,0 +1,19 @@
+{
+  "name": "node-red-node-ui-thermostat",
+  "version": "0.0.1",
+  "description": "A Node-RED dashboard ui node to control thermostats.",
+  "peerDependencies": {
+      "node-red-dashboard": ">2.15.0"
+  },
+  "author": "https://github.com/snst",
+  "license": "Apache-2.0",
+  "node-red": {
+    "nodes": {
+      "ui_thermostat-node": "thermostat-node.js"
+    }
+  },
+  "main": "thermostat-node.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

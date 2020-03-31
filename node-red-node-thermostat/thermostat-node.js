@@ -23,14 +23,15 @@ module.exports = function(RED) {
         //debugger;
         var html = String.raw`
         <p ng-init='init(` + configAsJson + `)'> </p>
-        <h3>` + config.roomLabel  + `</h3>
-        <md-button ng-click="send({topic: 'cmd/thermostat/`  + config.roomTopic + `/status', payload: '0'})">Update</md-button>
+        <md-button ng-click="send({topic: 'cmd/thermostat/`  + config.roomTopic + `/status', payload: '0'})">` + config.roomLabel  + `</md-button>
         <md-slider md-discrete="" step="0.5" min="14" max="24" ng-model="t_slider_temp" ng-change="change_temp()"></md-slider>
         <md-card layout="row"><p class="label">Temp: {{t_temp}}</p></md-card>
         <md-card layout="row"><p class="label">Valve: {{t_valve}}</p></md-card>
         <md-card layout="row"><p class="label">Mode: {{t_mode}}</p></md-card>
         <md-card layout="row"><p class="label">Boost: {{t_boost}}</p></md-card>
         <md-card layout="row"><p class="label">Bat: {{t_lowbat}}</p></md-card>
+        <span class="material-icons" ng-show="t_lowbat==true">battery_alert</span>
+        <span class="material-icons" ng-show="t_lowbat==false">battery_full</span>
         `;
         return html;
     };

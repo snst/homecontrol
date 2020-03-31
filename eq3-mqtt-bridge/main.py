@@ -4,7 +4,7 @@ from eq3btsmart import Thermostat
 import json
 import yaml
 
-with open("homeconfig.yml", 'r') as ymlfile:
+with open("/home/pi/homeconfig.yml", 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
 base_topic = "cmd/thermostat/"
@@ -33,11 +33,13 @@ def on_connect(mqttc, obj, flags, rc):
 
 
 def thermostat_get_status(room):
+    if not room:
+        return
     print("get status: " + room.name)
     room.thermostat.update()
-    print("Temp: " + str(room.thermostat.target_temperature))
-    print("Valve: " + str(room.thermostat.valve_state))
-    topic = "state/thermostat/" + room.name + "/"
+    #print("Temp: " + str(room.thermostat.target_temperature))
+    #print("Valve: " + str(room.thermostat.valve_state))
+    topic = "state/thermostat/" + room.name + "/status"
     msg=json.dumps({
         "temp": float(room.thermostat.target_temperature)
         , "valve":  int(room.thermostat.valve_state)
@@ -45,19 +47,28 @@ def thermostat_get_status(room):
         , "boost":  bool(room.thermostat.boost)
         , "lowbat": bool(room.thermostat.low_battery)
         , "room": str(room.name)
-        })
-    client.publish(topic + "status", msg)
+        }) 
+    client.publish(topic, msg, 0, True)
+    print("publish: " + topic + " " + msg)
+
+
+def thermostat_set_boost(room):
+    if not room:
+        return
+    print("set boost %s" % (room.name))
+    room.thermostat.mode = 5
 
 
 def thermostat_set_temp(room, temp):
+    if not room:
+        return
     print("set temp %s: %f" % (room.name, temp))
     room.thermostat.target_temperature = temp
-    print("set temp.. %f" % (temp))
 
 
 def on_message(mqttc, obj, msg):
     #print("msg: %s : %f" % (msg.topic, float(pl)))
-    #print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
+    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
     topic = msg.topic.split("/")
     if len(topic) != 4:
         return
@@ -66,15 +77,24 @@ def on_message(mqttc, obj, msg):
     cmd = topic[3]
 
     room = get_room(room_name)
-    if None == room:
-        return
 
     pl = msg.payload.decode("utf-8")
 
     if cmd == "status":
-        thermostat_get_status(room)
+        if room_name == "all":
+            for room in rooms.values():
+                thermostat_get_status(room)
+        else:
+            thermostat_get_status(room)
+
     if cmd == "temp":
         thermostat_set_temp(room, float(pl))
+        thermostat_get_status(room)
+        pass
+
+    if cmd == "boost":
+        thermostat_set_boost(room)
+        thermostat_get_status(room)
         pass
 
 
@@ -106,7 +126,8 @@ client.on_subscribe = on_subscribe
 # client.on_log = on_log
 client.connect(cfg['mqtt']['server'], 1883, 60)
 
-for name in rooms:
-    client.subscribe(base_topic + name + "/#", 0)
+#for name in rooms:
+#    client.subscribe(base_topic + name + "/#", 0)
+client.subscribe(base_topic + "#", 0)
 
 client.loop_forever()

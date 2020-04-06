@@ -14,6 +14,7 @@ mqttClient.onMessageArrived = message_arrived;
 mqttClient.onConnectionLost = connection_lost;
 
 var temp_map = {};
+var switch_map = {};
 var thermostat_timer = null;
 var temp_cmd = null;
 var temp_src = null;
@@ -144,6 +145,7 @@ function set_sensor_status(obj) {
 function set_switch_status(obj) {
 	var element = document.querySelector("#" + obj.room);
 	if (element) {
+		switch_map[obj.room] = obj.on;
 		if (obj.on)
 			$("#" + obj.room + " #icon").addClass("fg-yellow");
 		else
@@ -167,16 +169,6 @@ function message_arrived(message) {
 	else if (topic.startsWith("state/switch/")) {
 		set_switch_status(obj);
 	}
-}
-
-function toggle_button(event) {
-	event.preventDefault(); // To prevent following the link (optional)
-	var payload = "off";
-	if (event.target.checked)
-		payload = "on";
-	var id = event.target.id;
-	var topic = "cmnd/" + id + "/power";
-	SendMqtt(topic, payload);
 }
 
 function set_thermostat_temp(room, value) {
@@ -247,7 +239,10 @@ function preset_tile_clicked(event) {
 
 function switch_tile_clicked(event) {
 	if (check_tile_event(event)) {
-		SendMqtt("cmnd/" + temp_src + "/power", "toggle");
+		var cmd = "on";
+		if (switch_map[temp_src])
+			cmd = "off";
+		SendMqtt("cmnd/" + temp_src + "/power", cmd);
 	}
 }
 

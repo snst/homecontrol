@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Metro 4 -->
+  <link rel="stylesheet" href="https://cdn.metroui.org.ua/v4/css/metro-all.min.css">
+  <link href="https://cdn.metroui.org.ua/v4/css/metro-icons.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+  <script src="settings.js" type="text/javascript"></script>
+  <script src="webio_mqtt.js" type="text/javascript"></script>
+  <script src="https://cdn.metroui.org.ua/v4/js/metro.min.js"></script>
+
+  <style>
+    .tile-medium {
+      height: 75px;
+    }
+
+    .tile-wide {
+      height: 75px;
+    }
+
+    .badge-middle {
+      display: block;
+      padding-top: 10px;
+      font-size: 22px;
+      text-align: center;
+    }
+
+    .badge-switch,
+    .badge-preset,
+    .badge-middle2,
+    .badge-middle3 {
+      display: block;
+      padding-top: 16px;
+      font-size: 27px;
+      text-align: center;
+      position: relative;
+      z-index: 555555;
+    }
+
+    .badge-middle3 {
+      padding-top: 6px;
+    }
+
+    .badge-preset {
+      padding-top: 18px;
+      font-size: 20px;
+    }
+
+    .badge-switch {
+      padding-top: 6px;
+      font-size: 40px;
+    }
+
+    .badge-unit {
+      position: absolute;
+      display: block;
+      font-size: 12px;
+      z-index: 2;
+      right: 10px;
+      bottom: 0;
+    }
+
+    .badge-lowbat {
+      position: absolute;
+      display: none;
+      z-index: 2;
+      top: 5px;
+      left: 5px;
+    }
+
+    .badge-boost {
+      position: absolute;
+      display: none;
+      z-index: 2;
+      top: 5px;
+      right: 5px;
+    }
+
+
+    .tileicon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      -webkit-transform: translateY(-50%) translateX(-50%);
+      -ms-transform: translateY(-50%) translateX(-50%);
+      transform: translateY(-50%) translateX(-50%);
+      font-size: 50px;
+      line-height: 50px;
+      z-index: 0;
+      color: #1990cc;
+    }
+  </style>
+
+</head>
+
+<body class="bg-dark">
+
+
+  <div>
+    <div class="tiles-grid pos-fixed pos-center tiles-group size-2">
+
+      <div data-role="tile" data-size="small" id="living">
+        <span class="mif-thermometer2 tileicon"></span>
+        <span class="badge-middle2"> <span id="temperature"></span></span>
+        <span class="badge-unit">°C</span>
+      </div>
+
+      <div data-role="tile" data-size="small" id="living">
+        <span class="mif-water tileicon"></span>
+        <span class="badge-middle2"> <span id="humidity"></span></span>
+        <span class="badge-unit">%</span>
+      </div>
+
+      <div data-role="tile" data-size="small" class="switch_tile" id="tasmota2">
+        <span class="badge-switch mif-lamp" id="icon"></span>
+      </div>
+
+      <div data-role="tile" data-size="small" class="switch_tile" id="tasmota">
+        <span class="badge-switch mif-music" id="icon"></span>
+      </div>
+
+      <!--
+      <div data-role="tile" data-size="small">
+        <span class="badge-middle"><input type="checkbox" data-role="switch" data-material="true" id="tasmota"></span>
+        <span class="branding-bar">Subwoofer</span>
+      </div>
+      <div data-role="tile" data-size="small">
+        <span class="badge-middle"><input type="checkbox" data-role="switch" data-material="true" id="tasmota2"></span>
+        <span class="branding-bar">Lampe</span>
+      </div>
+      -->
+
+      <div data-role="tile" data-size="small" id="dwd">
+        <span class="mif-thermometer2 tileicon"></span>
+        <span class="badge-middle2"> <span id="temperature"></span> </span>
+        <span class="badge-unit">%</span>
+      </div>
+      <div data-role="tile" data-size="small" id="dwd">
+        <span class="mif-wind tileicon"></span>
+        <span class="badge-middle2"> <span id="windspeed"></span></span>
+        <span class="badge-unit">km/h</span>
+      </div>
+      <div data-role="tile" data-size="small" id="dwd">
+        <span class="mif-lines tileicon"></span>
+        <span class="badge-middle2"> <span id="pressure"></span></span>
+        <span class="badge-unit">hPa</span>
+      </div>
+      <div data-role="tile" data-size="small" id="dwd">
+        <span class="mif-water tileicon"></span>
+        <span class="badge-middle2"> <span id="humidity"></span></span>
+        <span class="badge-unit">%</span>
+      </div>
+
+
+      <div data-role="tile" data-size="small" class="preset_tile" id="off">
+        <span class="badge-preset">Off</span>
+      </div>
+      <div data-role="tile" data-size="small" class="preset_tile" id="home1">
+        <span class="badge-preset">Home</span>
+      </div>
+      <div data-role="tile" data-size="small" class="preset_tile" id="home2">
+        <span class="badge-preset">Home+</span>
+      </div>
+      <div data-role="tile" data-size="small" class="preset_tile" id="away">
+        <span class="badge-preset">Away</span>
+      </div>
+
+
+      <div data-role="tile" data-size="medium" class="thermostat_tile" id="living">
+        <span class="badge-lowbat mif-battery-charge mif-2x" id="lowbat"></span>
+        <span class="badge-boost mif-rocket mif-2x" id="boost"></span>
+        <span class="badge-bottom" id="valve"></span>
+        <span class="badge-middle3"> <span id="temp"></span> <span class="text-small">°C</span></span>
+        <span class="branding-bar">Wohnzimmer</span>
+      </div>
+      <div data-role="tile" data-size="medium" class="thermostat_tile" id="bed">
+        <span class="badge-lowbat mif-battery-charge mif-2x" id="lowbat"></span>
+        <span class="badge-boost mif-rocket mif-2x" id="boost"></span>
+        <span class="badge-bottom" id="valve"></span>
+        <span class="badge-middle3"> <span id="temp"></span> <span class="text-small">°C</span></span>
+        <span class="branding-bar">Schlafzimmer</span>
+      </div>
+
+      <div data-role="tile" data-size="medium" class="thermostat_tile" id="bath">
+        <span class="badge-lowbat mif-battery-charge mif-2x" id="lowbat"></span>
+        <span class="badge-boost mif-rocket mif-2x" id="boost"></span>
+        <span class="badge-bottom" id="valve"></span>
+        <span class="badge-middle3"> <span id="temp"></span> <span class="text-small">°C</span></span>
+        <span class="branding-bar">Badezimmer</span>
+      </div>
+
+
+
+    </div>
+
+    <div class="fg-light pos-fixed pos-bottom-left" style="position: absolute;">
+      <span class="cloud3" id="connect_status"></span>
+      <span id="cmd">-</span>
+    </div>
+
+  </div>
+
+</body>
+<script>
+  //$(".temp-panel").addClass("icon-box bg-dark fg-white border bd-light border-radius-4 border-size-2");
+  init();
+</script>
+</html>
